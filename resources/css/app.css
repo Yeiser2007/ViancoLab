@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-semibold shadow-md transition-all duration-150 hover:shadow-sm  hover:border;
+  }
+}
+[v-cloak] {
+    display: none;
+}
