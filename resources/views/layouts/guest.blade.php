@@ -19,18 +19,13 @@
 <body class="font-sans text-gray-900 antialiased">
 
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 ">
-        <div>
-            <a href="/">
-                <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-            </a>
-        </div>
-        <h1>app</h1>
-             <div id="app" v-cloak>
-            <Card />
-        </div>
-       
-        <div
-            class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg">
+        <div class="w-full sm:max-w-md mt-6 px-6 py-4 shadow-md overflow-hidden sm:rounded-lg bg-white">
+            <div class="flex justify-center flex-col items-center">
+                <a href="/">
+                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+                </a>
+                <h1 class="mt-3 block font-extrabold text-2xl text-black-700">{{ __('Register') }}</h1>
+            </div>
             {{ $slot }}
         </div>
     </div>

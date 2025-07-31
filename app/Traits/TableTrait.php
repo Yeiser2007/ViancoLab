@@ -20,9 +20,9 @@ trait TableTrait
             list($sortCol, $sortDir) = explode('|', $request->sort);
             $listCol = explode(',', $sortCol);
             $listDir = explode(',', $sortDir);
-            for ($i=0; $i < count($listCol) ; $i++) { 
+            for ($i = 0; $i < count($listCol); $i++) {
                 $builder = $builder->orderBy($listCol[$i], $listDir[$i]);
-            }           
+            }
         }
 
         return $builder;
@@ -30,12 +30,8 @@ trait TableTrait
 
     public static function paginate(Request $request, Builder $builder)
     {
-        if ($request->exists('per_page')) {
-            $builder = $builder->paginate((int)$request->per_page);
-        } else {
-            $builder = $builder->paginate($builder->count());
-        }
-
-        return $builder;
+        $perPage = $request->input('per_page', null);
+        return $builder->paginate($perPage ?: $builder->getModel()->newQuery()->count());
     }
+
 }

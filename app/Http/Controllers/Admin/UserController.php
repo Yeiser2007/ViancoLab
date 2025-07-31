@@ -12,68 +12,72 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function __construct()
     {
         $this->middleware(['auth']);
     }
-
     public function index(Request $request)
     {
-     if($request->wantsJson()) {
-        $users = User::with('roles')
-        ->ofName($request->input('query'))
-        ->ofRole($request->input('role'));
-        $users = TableTrait::sortAndPaginate($request, $users);
-        return response()->json($users);
-     }
-     return view('admin.users');
-    }
+        if ($request->wantsJson()) {
+            $users = User::with('roles')
+                ->when($request->input('name'), function ($query, $search) {
+                    return $query->ofName($search);
+                })
+                ->when($request->input('role'), function ($query, $role) {
+                    return $query->ofRole($role);
+                })
+                ->when($request->has('status'), function ($query) use ($request) {
+                    return $query->where('active', $request->boolean('status'));
+                });
 
-    public function create()
-    {
-        //
-    }
+            $users = TableTrait::sortAndPaginate($request, $users);
 
-    /**
-     * Store a newly created resource in storage.
-     */
+            return response()->json($users);
+        }
+
+        return view('admin.users');
+    }
     public function store(StoreUsersRequest $request)
     {
-        //
+        try {
+            if ($request->wantsJson()) {
+                $user = User::create($request->all());
+                $user->assignRole($request->role);
+                return response()->json(['message' => 'Usuario agregado correctamente'], 200);
+            }
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
-
-    /**
-     * Display the specified resource.
-     */
     public function show(User $users)
     {
-        //
-    }
+        if ($users->exists) {
+            return response()->json($users);
+        } else {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $users)
-    {
-        //
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateUsersRequest $request, User $users)
     {
-        //
+        try {
+            if ($request->wantsJson()) {
+                $users->update($request->all());
+                $users->syncRoles($request->role);
+                return response()->json(['message' => 'Usuario actualizado correctamente'], 200);
+            }
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(User $users)
     {
-        //
+        try {
+            $users->delete();
+            return response()->json(['message' => 'Usuario eliminado correctamente'], 200);
+        } catch (\Throwable $e) {
+            # code...
+        }
     }
 }

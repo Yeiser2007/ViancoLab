@@ -13,7 +13,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable,HasRoles;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -50,22 +50,26 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-        //Scopes
+    //Scopes
     public function scopeOfName($query, $name)
     {
         if (!empty($name)) {
-            return $query->where('name', 'like', '%' . $name . '%')
-                ->orWhere('surnames', 'like', '%' . $name . '%')
-                ->orWhere('mobile_phone', 'like', '%' . $name . '%')
-                ->orWhere('email', 'like', '%' . $name . '%')
-                ->orWhereHas('company', function (Builder $query) use ($name) {
-                    $query->where('name', 'like', '%' . $name . '%')
-                        ->orWhere('rfc', 'like', '%' . $name . '%');
-                });
+            return $query->where(function ($q) use ($name) {
+                $q->where('name', 'like', '%' . $name . '%')
+                    ->orWhere('first_name', 'like', '%' . $name . '%')
+                    ->orWhere('last_name', 'like', '%' . $name . '%')
+                    ->orWhere('email', 'like', '%' . $name . '%');
+
+                if (method_exists($this, 'company')) {
+                    $q->orWhereHas('company', function (Builder $query) use ($name) {
+                        $query->where('name', 'like', '%' . $name . '%')
+                            ->orWhere('rfc', 'like', '%' . $name . '%');
+                    });
+                }
+            });
         }
         return $query;
     }
-
     public function scopeOfRole($query, $role)
     {
         if (!empty($role)) {

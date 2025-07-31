@@ -8,7 +8,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <span class="text-xl font-bold">MiApp</span>
+          <span class="text-xl font-bold">ViancoLab</span>
         </div>
         <div class="ml-4 relative">
           <button @click="toggleDropdown" class="flex items-center text-sm rounded-full focus:outline-none">

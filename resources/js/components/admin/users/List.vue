@@ -14,9 +14,11 @@
         </div>
         <TableList></TableList>
 
-        <Modal v-model="showModal" title="Confirmación" size="lg" :backdrop-close="true" @close="onModalClose">
-               <Form @confirm-action="confirmAction"></Form>
-        </Modal>
+    <Modal v-model="showModal" title="Usuario" size="2xl" :backdrop-close="true" @close="onModalClose">
+        <div class="modal-content-container"> 
+            <Form @confirm-action="confirmAction"></Form>
+        </div>
+    </Modal>
 </template>
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -43,7 +45,30 @@ const onModalClose = () => {
 
 </script>
 
- 
-<style lang="">
+<style scoped>
+/* Estilo para el contenedor del contenido del modal */
+.modal-content-container {
+    max-height: 70vh; /* Ajusta este valor según necesites */
+    overflow-y: auto; /* Habilita el scroll vertical cuando sea necesario */
+    padding-right: 0.5rem; /* Para evitar que el contenido toque la barra de scroll */
+}
 
+/* Estilo opcional para personalizar la barra de scroll */
+.modal-content-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-content-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.modal-content-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.modal-content-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
 </style>

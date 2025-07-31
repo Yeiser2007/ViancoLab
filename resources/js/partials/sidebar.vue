@@ -85,7 +85,7 @@ const menuItems = ref([
     subItems: [
       {
         name: 'Lista de Usuarios',
-        route: '/users',
+        route: '/admin/users',
         permission: ['users.index']
       },
       {
