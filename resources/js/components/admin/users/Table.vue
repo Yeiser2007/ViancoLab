@@ -14,30 +14,46 @@
             <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
 
-        <DataTable :value="userData" :loading="loading" :lazy="true" :paginator="true" :rows="10"
-            :totalRecords="totalRecords" @page="onPageChange" @sort="onSort">
+        <DataTable :value="userData" :loading="loading" :lazy="true" :paginator="true" :rows="rows"
+            :totalRecords="totalRecords" @page="onPageChange" @sort="onSort" >
             <Column field="id" header="ID" :sortable="true"></Column>
             <Column field="name" header="Nombre" :sortable="true"></Column>
-            <Column field="email" header="Correo" :sortable="true"></Column>
+            <Column field="first_name" header="Primer apellido" :sortable="true"></Column>
+            <Column field="last_name" header="Segundo apellido" :sortable="true"></Column>
+            <Column field="email" header="Correo"></Column>
+            <Column field="roles" header="Rol">
+                <template #body="slotProps">
+                    <div class="flex flex-wrap gap-1">
+                        <Badge v-for="role in slotProps.data.roles" :key="role.id" :text="role.name.toUpperCase()"
+                            :type="'warning'" />
+                    </div>
+                </template>
+            </Column>
             <Column header="Acciones" class="text-center">
                 <template #body="slotProps">
-                    <button @click="handleAction(slotProps.data)"
-                        class="btn inline-flex items-center justify-center gap-2">
-                        Acción para {{ slotProps.data.name }}
-                    </button>
+                    <div class="text-center flex gap-2">
+                        <Button theme="info" icon="pencil" title="" permission="users.update" :data="slotProps.data"
+                            @click="$emit('edit-item', slotProps.data)" />
+                        <Button theme="danger" icon="trash" title="" permission="users.destroy" :data="slotProps.data"
+                            @click="$emit('delete-item', slotProps.data.id)" />
+                    </div>
                 </template>
+
             </Column>
 
             <template #empty>Sin resultados</template>
         </DataTable>
     </div>
 </template>
-
 <script setup>
-import { inject,ref, onMounted } from 'vue';
+import { inject, ref, onMounted, defineExpose } from 'vue';
 import DataTable from 'primevue/datatable';
 import FilterBar from '../../partials/FilterBar.vue';
+import Button from '../../partials/Button.vue';
+import Badge from '../../partials/Badge.vue';
 import Column from 'primevue/column';
+
+defineEmits(['edit-item', 'delete-item', 'refresh']);
 
 
 const api = inject('api');
@@ -49,21 +65,23 @@ const sortField = ref(null);
 const sortOrder = ref(null);
 const rolesList = ref([]);
 const currentPage = ref(1);
+const rows = ref();
+
+
 
 const fetchUsers = async () => {
     loading.value = true;
     try {
         const params = {
-            page: currentPage.value, 
+            page: currentPage.value,
             ...filters.value,
         };
-
+        rows.value = params.per_page  || 10;
         if (sortField.value && sortOrder.value) {
             params.sort = `${sortField.value}|${sortOrder.value === 1 ? 'asc' : 'desc'}`;
         }
-
-        const response = await api.get('admin/users', { params });
-        
+        console.log("Params que se envían:", params);
+        const response = await api.get('admin/users', params);
         userData.value = response.data?.data || [];
         totalRecords.value = response.data?.meta?.total || response.data?.total || 0;
     } catch (err) {
@@ -72,33 +90,34 @@ const fetchUsers = async () => {
         loading.value = false;
     }
 };
-
-
-
 const handleFilter = (appliedFilters) => {
     filters.value = appliedFilters;
-    currentPage.value = 1; // Reseteamos a la primera página
+    currentPage.value = 1;
     fetchUsers();
 };
-
 const onPageChange = (event) => {
-    currentPage.value = event.page + 1; // Actualizamos página actual
-    fetchUsers();
+    currentPage.value = event.page + 1;
+    fetchUsers(event.rows);
 };
 
 const onSort = (event) => {
     sortField.value = event.sortField;
     sortOrder.value = event.sortOrder;
-    currentPage.value = 1; // Reseteamos a la primera página
+    currentPage.value = 1;
     fetchUsers();
 };
 
-const handleAction = (rowData) => {
-    console.log('Datos de la fila:', rowData);
-    // Implementa tus acciones aquí
+const refreshData = async () => {
+    await fetchUsers();
 };
 
 onMounted(() => {
     fetchUsers();
 });
+
+defineExpose({
+    refreshData,
+    getCurrentData: () => userData.value
+});
+
 </script>

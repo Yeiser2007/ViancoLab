@@ -28,7 +28,7 @@
               </button>
             </div>
 
-            <div class="p-4">
+            <div class="pr-4 pb-4 pl-4 overflow-y-auto">
               <slot></slot>
             </div>
 

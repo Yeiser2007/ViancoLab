@@ -1,20 +1,18 @@
 <template>
     <div class="filter-bar bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
         <div class="flex flex-col sm:flex-row flex-wrap items-end gap-4">
-            <!-- Registros por página -->
             <div class="w-full sm:w-auto">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Registros por página</label>
                 <select v-model="perPage"
                     class="w-full sm:w-32 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                     @change="emitFilter">
+                    <option value="5">5</option>
                     <option value="10">10</option>
                     <option value="20">20</option>
                     <option value="50">50</option>
                     <option value="100">100</option>
                 </select>
             </div>
-
-            <!-- Búsqueda general -->
             <div class="w-full sm:flex-1 min-w-[200px]">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Búsqueda</label>
                 <div class="relative">
@@ -47,8 +45,6 @@
                     </option>
                 </select>
             </div>
-
-            <!-- Botón de filtros para móvil -->
             <button @click="showFilters = !showFilters"
                 class="sm:hidden flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm font-medium transition">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,11 +53,7 @@
                 </svg>
                 Filtros
             </button>
-
-
-            <!-- Contenedor de filtros avanzados -->
             <div :class="['w-full', showFilters ? 'flex' : 'hidden', 'sm:flex sm:flex-row flex-wrap gap-4']">
-                <!-- Filtros de fecha -->
                 <template v-if="filters.date || filters.dateRange">
                     <div v-if="filters.date" class="w-full sm:w-auto">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
@@ -85,8 +77,6 @@
                         </div>
                     </template>
                 </template>
-
-                <!-- Botones de acción -->
                 <div class="w-full sm:w-auto flex items-end gap-2">
                     <button @click="emitFilter"
                         class="px-4 py-2 bg-primary-600 hover:bg-secondary-700 text-white text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2 transition flex items-center gap-2">
@@ -111,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, inject } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 
 const api = inject('api');
 interface FilterProps {
@@ -122,14 +112,13 @@ interface FilterProps {
         status?: boolean;
         role?: boolean;
     };
-    roles?: Array<{ id: string, name: string }>; // Prop opcional para lista de roles
+    roles?: Array<{ id: string, name: string }>;
 }
 
 const props = defineProps<FilterProps>();
 const emit = defineEmits(['filter']);
 const showFilters = ref(false);
 
-// Valores por defecto
 const perPage = ref('10');
 const filterText = ref('');
 const nameFilter = ref('');
@@ -140,23 +129,20 @@ const statusFilter = ref('');
 const roleFilter = ref('');
 const rolesList = ref([]);
 
-// Emitir evento de filtrado
 const emitFilter = () => {
     const filters: Record<string, string> = {
-        per_page: perPage.value // Cambiado a per_page para coincidir con Laravel
+        per_page: perPage.value
     };
 
-    if (filterText.value) filters.name = filterText.value;;
-    if (props.filters.name && nameFilter.value) filters.name = nameFilter.value;
+    if (filterText.value) filters.name = filterText.value;
     if (props.filters.date && dateFilter.value) filters.date = dateFilter.value;
     if (props.filters.dateRange && startDate.value && endDate.value) {
         filters.start_date = startDate.value;
         filters.end_date = endDate.value;
     }
-    if (props.filters.status && statusFilter.value) {
-        filters.status = statusFilter.value === 'active' ? '1' : '0';
+    if (props.filters.role && roleFilter.value) {
+        filters.role = roleFilter.value;
     }
-    if (props.filters.role && roleFilter.value) filters.role = roleFilter.value;
 
     emit('filter', filters);
 };

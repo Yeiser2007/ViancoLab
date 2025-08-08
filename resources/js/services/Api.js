@@ -1,78 +1,28 @@
+// api.js
 import axios from 'axios';
 
-// Configuración inicial
-const ApiService = {
-  _baseUrl: '/',
-  _axiosInstance: axios.create(),
+let baseUrl = '/';
 
-  init(baseURL = '/') {
-    this._baseUrl = baseURL.endsWith('/') ? baseURL : `${baseURL}/`;
-    this._axiosInstance = axios.create({
-      baseURL: this._baseUrl,
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    });
-
-    // Interceptores (opcional pero recomendado)
-    this._setupInterceptors();
-  },
-
-  _setupInterceptors() {
-    // Interceptor de solicitudes
-    this._axiosInstance.interceptors.request.use(
-      config => {
-        // Puedes añadir lógica común aquí (como tokens)
-        return config;
-      },
-      error => {
-        return Promise.reject(error);
-      }
-    );
-
-    // Interceptor de respuestas
-    this._axiosInstance.interceptors.response.use(
-      response => response,
-      error => {
-        // Manejo centralizado de errores
-        console.error('API Error:', error);
-        return Promise.reject(error);
-      }
-    );
-  },
-
+export default {
   setBaseUrl(url) {
-    this.init(url);
+    baseUrl = url.endsWith('/') ? url : url + '/';
   },
-
-  get(resource, config = {}) {
-    return this._axiosInstance.get(resource, config);
+  get(resource, params = {}) {
+    return axios.get(baseUrl + resource, { params });
   },
-
-  post(resource, data, config = {}) {
-    return this._axiosInstance.post(resource, data, config);
+  show(resource, id) {
+    return axios.get(`${baseUrl + resource}/${id}`);
   },
-
-  put(resource, id, data, config = {}) {
-    return this._axiosInstance.put(`${resource}/${id}`, data, config);
+  post(resource, data) {
+    return axios.post(baseUrl + resource, data);
   },
-
-  patch(resource, id, data, config = {}) {
-    return this._axiosInstance.patch(`${resource}/${id}`, data, config);
+  put(resource, id, data) {
+    return axios.put(`${baseUrl + resource}/${id}`, data);
   },
-
-  delete(resource, id, config = {}) {
-    return this._axiosInstance.delete(`${resource}/${id}`, config);
+  patch(resource, id, data) {
+    return axios.patch(`${baseUrl + resource}/${id}`, data);
   },
-
-  customRequest(config) {
-    return this._axiosInstance(config);
+  delete(resource, id) {
+    return axios.delete(`${baseUrl + resource}/${id}`);
   }
 };
-
-// Inicialización por defecto
-ApiService.init();
-
-export default ApiService;

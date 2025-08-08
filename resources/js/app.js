@@ -1,17 +1,22 @@
+import { customSwal, ApiService } from './bootstrap';
 import { createApp } from 'vue';
 import FloatingVue from 'floating-vue';
-import '../css/app.css'
 import PrimeVue from 'primevue/config';
 import ToastService from 'primevue/toastservice';
+
+import '../css/app.css';
 import 'primeicons/primeicons.css';
 import '../css/table.css';
-import ApiService from './services/Api';
 
 const app = createApp({});
+app.config.globalProperties.$swal = customSwal;
 app.config.globalProperties.$api = ApiService;
+app.provide('swal', customSwal);
+app.provide('api', ApiService);
+
 app.config.globalProperties.$user = window.Laravel?.user || null;
 app.config.globalProperties.$roles = window.Laravel?.roles || null;
-app.provide('api', ApiService)
+
 app.directive('can', {
   beforeMount(el, binding) {
     if (!window.Laravel?.permissions?.[binding.value]) {
@@ -26,13 +31,6 @@ app.directive('can-else', {
     }
   }
 });
-
-
-import Button from './components/partials/Button.vue';
-import Card from './components/Card.vue';
-import AppLayout from './layout/AppLayout.vue';
-import Users from './components/admin/users/List.vue';
-
 
 app.use(FloatingVue)
 app.use(PrimeVue, {
@@ -49,18 +47,29 @@ app.use(PrimeVue, {
       bodycell: 'px-4 py-2 border-b border-gray-200',
     },
     paginator: {
-      root: 'flex justify-end items-center gap-2 mt-4',
-      pageButton: ({ context }) =>
-        `px-3 py-1 rounded-md text-sm ${context.active
-          ? 'bg-blue-600 text-white'
-          : 'bg-white text-gray-700 hover:bg-gray-100'
+      root: 'flex flex-wrap items-center justify-center gap-2 border-t border-gray-200 bg-white px-4 py-3 sm:px-6',
+      content: 'flex items-center gap-2',
+      first: 'px-3 py-1 rounded-md bg-white text-gray-700 hover:bg-gray-100 border disabled:opacity-50 disabled:cursor-not-allowed',
+      prev: 'px-3 py-1 rounded-md bg-white text-gray-700 hover:bg-gray-100 border disabled:opacity-50 disabled:cursor-not-allowed',
+      next: 'px-3 py-1 rounded-md bg-white text-gray-700 hover:bg-gray-100 border disabled:opacity-50 disabled:cursor-not-allowed',
+      last: 'px-3 py-1 rounded-md bg-white text-gray-700 hover:bg-gray-100 border disabled:opacity-50 disabled:cursor-not-allowed',
+      page: ({ context }) =>
+        `px-3 py-1 rounded-md text-sm border ${context.active
+          ? 'bg-primary-500 text-white border-primary-600'
+          : 'bg-white text-gray-700 hover:bg-gray-100 border-gray-300'
         }`,
-      current: 'bg-blue-600 text-white px-3 py-1 rounded-md',
+      pages: 'flex gap-1'
     }
   }
 
 });
 app.use(ToastService);
+
+
+import Button from './components/partials/Button.vue';
+import Card from './components/Card.vue';
+import AppLayout from './layout/AppLayout.vue';
+import Users from './components/admin/users/List.vue';
 
 app.component('Boton', Button);
 app.component('Card', Card);

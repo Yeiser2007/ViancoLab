@@ -1,74 +1,133 @@
 <template>
-        <div class="py-3 backdrop-blur-sm rounded-t-2xl flex items-center justify-between border-b-2 mb-3.5">
-                <div class="flex items-center gap-2 sm:gap-3">
-                        <div class="flex items-center justify-center h-8 w-8 sm:h-9 sm:w-9">
-                                <i class="pi pi-users text-secondary-500 text-lg sm:text-xl"></i>
-                        </div>
-                        <div>
-                                <h2 class="text-base font-bold text-secondary-500 sm:text-lg md:text-xl">
-                                        Gestión de Usuarios
-                                </h2>
-                        </div>
-                </div>
-                <Button @open-modal="handleOpenModal" :theme="'primary'" :title="'Agregar'" :icon="'plus'" :eventListener="'open-modal'" class="w-auto flex-shrink-0 text-sm px-3 py-1.5 sm:px-4 sm:py-2 sm:text-base sm:ml-2" />
-        </div>
-        <TableList></TableList>
+        <TitleCard icon="users" title="Gestión de Usuarios">
+                <Button @click="createItem" :theme="'primary'" :title="'Agregar'" :icon="'plus'"
+                        :eventListener="'open-modal'"
+                        class="w-auto flex-shrink-0 text-sm px-3 py-1.5 sm:px-4 sm:py-2 sm:text-base sm:ml-2" />
+        </TitleCard>
 
-    <Modal v-model="showModal" title="Usuario" size="2xl" :backdrop-close="true" @close="onModalClose">
-        <div class="modal-content-container"> 
-            <Form @confirm-action="confirmAction"></Form>
-        </div>
-    </Modal>
+        <TableList ref="tableRef" @edit-item="updateItem($event)" @delete-item="deleteItem($event)"></TableList>
+
+        <Modal v-model="showModal" :title="titleModal" size="xl" :backdrop-close="true" @close="onModalClose">
+                <Form :item="formData" :roles="rolesList" @confirm-action="confirmAction" @close="onModalClose" />
+        </Modal>
+        
 </template>
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { ref, reactive, inject, onMounted } from 'vue';
 import TableList from './Table.vue';
 import Modal from '../../partials/Modal.vue';
 import Button from '../../partials/Button.vue';
+import TitleCard from '../../partials/TitleCard.vue';
 import Form from './Form.vue';
 
+const api = inject('api');
+const Swal = inject('swal');
+
 const showModal = ref(false);
+const titleModal = ref('');
+const tableRef = ref(null);
+const rolesList = ref([]);
 
-const confirmAction = () => {
-        alert('Acción confirmada!')
-        showModal.value = false
-}
-const handleOpenModal = () => {
+const fetchRoles = async () => {
+        try {
+                const response = await api.get('admin/roles');
+                rolesList.value = response.data.map(role => ({
+                        label: role.name.charAt(0).toUpperCase() + role.name.slice(1),
+                        value: role.id,
+                        name: role.name.toLowerCase()
+                }));
+        } catch (err) {
+                console.error('Error al cargar roles:', err);
+                Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudieron cargar los roles'
+                });
+        }
+};
+
+const defaultFormData = () => ({
+        id: '',
+        name: '',
+        first_name: '',
+        last_name: '',
+        email: '',
+        roles: [],
+        password: '',
+        password_confirmation: '',
+        option: '1'
+});
+const formData = reactive(defaultFormData());
+const updateItem = (item) => {
+        const rolesList = item.roles.map(role => role.id);
+        Object.assign(formData, {
+                id: item.id,
+                name: item.name,
+                first_name: item.first_name,
+                last_name: item.last_name,
+                email: item.email,
+                roles: rolesList,
+                password: '',
+                password_confirmation: '',
+                option: '2'
+        });
+        titleModal.value = 'Actualizar Usuario';
         showModal.value = true;
-}
+};
 
+const createItem = () => {
+        Object.assign(formData, defaultFormData());
+        titleModal.value = 'Crear Usuario';
+        showModal.value = true;
+};
+
+const deleteItem = async (userId) => {
+        try {
+                Swal.fire({
+                        title: '¿Estás seguro?',
+                        text: "¡No podrás revertir esto!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                }).then(async (result) => {
+                        if (result.isConfirmed) {
+                                const response = await api.delete(`admin/users`, userId);
+                                if (response?.status === 200) {
+                                        Swal.fire({
+                                                icon: 'success',
+                                                title: 'Éxito',
+                                                text: response.data.message || 'Usuario eliminado correctamente',
+                                                timer: 1500,
+                                                showConfirmButton: true
+                                        });
+                                        await reloadTable();
+                                }
+                        }
+                });
+        } catch (err) {
+                console.error('Error al eliminar usuario:', err);
+                Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: err.response?.data?.message || 'Error al eliminar el usuario',
+                });
+        }
+};
 const onModalClose = () => {
-        console.log('Modal cerrado')
+        showModal.value = false;
+};
+const confirmAction = () => {
+        showModal.value = false;
+        reloadTable();
 }
-
+const reloadTable = () => {
+        tableRef.value.refreshData();
+}
+onMounted(() => {
+        fetchRoles();
+});
 
 </script>
-
-<style scoped>
-/* Estilo para el contenedor del contenido del modal */
-.modal-content-container {
-    max-height: 70vh; /* Ajusta este valor según necesites */
-    overflow-y: auto; /* Habilita el scroll vertical cuando sea necesario */
-    padding-right: 0.5rem; /* Para evitar que el contenido toque la barra de scroll */
-}
-
-/* Estilo opcional para personalizar la barra de scroll */
-.modal-content-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.modal-content-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.modal-content-container::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px;
-}
-
-.modal-content-container::-webkit-scrollbar-thumb:hover {
-    background: #555;
-}
-</style>

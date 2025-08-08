@@ -4,9 +4,24 @@
 
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-lg font-semibold shadow-md transition-all duration-150 hover:shadow-sm  hover:border;
+    @apply px-4 py-2 rounded-lg font-semibold shadow-md transition-all duration-150 hover:shadow-sm hover:border;
   }
+
+  .p-paginator .p-paginator-page,
+  .p-paginator .p-paginator-next,
+  .p-paginator .p-paginator-prev,
+  .p-paginator .p-paginator-first,
+  .p-paginator .p-paginator-last {
+    @apply px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100;
+  }
+
+  .p-paginator .p-highlight {
+    @apply bg-blue-500 text-white border-blue-500;
+  }
+
 }
+
 [v-cloak] {
-    display: none;
+  display: none;
+
 }

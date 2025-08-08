@@ -55,21 +55,16 @@ class User extends Authenticatable
     {
         if (!empty($name)) {
             return $query->where(function ($q) use ($name) {
-                $q->where('name', 'like', '%' . $name . '%')
-                    ->orWhere('first_name', 'like', '%' . $name . '%')
-                    ->orWhere('last_name', 'like', '%' . $name . '%')
-                    ->orWhere('email', 'like', '%' . $name . '%');
-
-                if (method_exists($this, 'company')) {
-                    $q->orWhereHas('company', function (Builder $query) use ($name) {
-                        $query->where('name', 'like', '%' . $name . '%')
-                            ->orWhere('rfc', 'like', '%' . $name . '%');
-                    });
-                }
+                $q->where('name', 'like', "%$name%")
+                    ->orWhere('first_name', 'like', "%$name%")
+                    ->orWhere('last_name', 'like', "%$name%")
+                    ->orWhere('email', 'like', "%$name%");
             });
         }
+
         return $query;
     }
+
     public function scopeOfRole($query, $role)
     {
         if (!empty($role)) {
