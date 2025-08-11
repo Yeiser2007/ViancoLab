@@ -1,35 +1,24 @@
-// src/composables/useFormHandler.js
-import { ref, reactive, computed } from 'vue';
-import { useGlobal } from './useGlobal';
+// composables/useFormSubmit.js
+import { ref } from 'vue';
+import { useGlobal } from '@/composables/useGlobal';
 
-export function useFormHandler({ endpoint, initialData = {}, roles = [] }) {
+export function useFormSubmit() {
   const { api, swal } = useGlobal();
-
-  const errors = ref({});
   const loading = ref(false);
+  const errors = ref({});
 
-  const item = reactive({
-    ...initialData,
-    password: '',
-    password_confirmation: ''
-  });
-
-  const options = computed(() => roles);
-
-  const submitForm = async (emit) => {
+  const submit = async ({ method, url, data, onSuccess }) => {
     try {
       loading.value = true;
       errors.value = {};
+
       let response;
-
-      if (item.option === '2') {
-        response = await api.put(endpoint, item.id, item);
-      } else if (item.option === '1') {
-        response = await api.post(endpoint, item);
+      if (method === 'post') {
+        response = await api.post(url, data);
+      } else if (method === 'put') {
+        response = await api.put(url, data.id, data);
       }
-
-      if (response?.status === 200) {
-        emit('confirm-action');
+      if ([200, 201].includes(response?.status)) {
         swal.fire({
           icon: 'success',
           title: 'Éxito',
@@ -37,6 +26,7 @@ export function useFormHandler({ endpoint, initialData = {}, roles = [] }) {
           timer: 2500,
           showConfirmButton: true
         });
+        if (onSuccess) onSuccess(response.data);
       }
     } catch (err) {
       if (err.response?.data?.errors) {
@@ -55,11 +45,5 @@ export function useFormHandler({ endpoint, initialData = {}, roles = [] }) {
     }
   };
 
-  return {
-    item,
-    options,
-    errors,
-    loading,
-    submitForm
-  };
+  return { submit, loading, errors };
 }

@@ -19,8 +19,8 @@
     </div>
     <nav class="mt-6">
       <ul>
-        <li v-for="item in menuItems" :key="item.name" class="px-3 py-2 hover:bg-primary-300 mx-1 rounded"
-          :title="collapsed ? item.name : ''">
+        <li v-for="item in menuItems" v-can="item.permission" :key="item.name"
+          class="px-3 py-2 hover:bg-primary-300 mx-1 rounded" :title="collapsed ? item.name : ''">
           <div @click="toggleSubmenu(item.name)" class="flex items-center justify-between cursor-pointer">
             <div class="flex items-center">
               <span class="flex-shrink-0" v-html="item.icon"></span>
@@ -28,19 +28,16 @@
                 {{ item.name }}
               </span>
             </div>
-            <svg v-if="item.subItems && !collapsed" 
-                 class="w-4 h-4 transition-transform duration-200"
-                 :class="{ 'transform rotate-90': openSubmenu === item.name }"
-                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg v-if="item.subItems && !collapsed" class="w-4 h-4 transition-transform duration-200"
+              :class="{ 'transform rotate-90': openSubmenu === item.name }" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </div>
-          
+
           <transition name="slide">
-            <ul v-if="item.subItems && openSubmenu === item.name && !collapsed" 
-                class="ml-6 mt-1 space-y-1">
-              <li v-for="subItem in item.subItems" :key="subItem.name" 
-                  class="px-2 py-1 hover:bg-primary-400 rounded">
+            <ul v-if="item.subItems && openSubmenu === item.name && !collapsed"  class="ml-6 mt-1 space-y-1">
+              <li v-for="subItem in item.subItems"   :key="subItem.name" class="px-2 py-1 hover:bg-primary-400 rounded">
                 <a :href="subItem.route" class="flex items-center">
                   <span class="text-sm">{{ subItem.name }}</span>
                 </a>
@@ -90,12 +87,12 @@ const menuItems = ref([
       },
       {
         name: 'Roles',
-        route: '/users/roles',
+        route: '/admin/roles',
         permission: ['roles.index']
       },
       {
         name: 'Permisos',
-        route: '/users/permissions',
+        route: '/admin/permissions',
         permission: ['permissions.index']
       }
     ]

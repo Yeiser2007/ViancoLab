@@ -19,11 +19,21 @@ app.config.globalProperties.$roles = window.Laravel?.roles || null;
 
 app.directive('can', {
   beforeMount(el, binding) {
-    if (!window.Laravel?.permissions?.[binding.value]) {
+    const userPermissions = window.Laravel?.permissions || {};
+    const value = binding.value;
+    let allowed = false;
+    if (Array.isArray(value)) {
+      allowed = value.some(perm => userPermissions[perm]);
+    } else if (typeof value === 'string') {
+      allowed = !!userPermissions[value];
+    }
+
+    if (!allowed) {
       el.style.display = 'none';
     }
   }
 });
+
 app.directive('can-else', {
   beforeMount(el, binding) {
     if (window.Laravel?.permissions?.[binding.value]) {
@@ -70,10 +80,14 @@ import Button from './components/partials/Button.vue';
 import Card from './components/Card.vue';
 import AppLayout from './layout/AppLayout.vue';
 import Users from './components/admin/users/List.vue';
+import Roles from './components/admin/roles/List.vue';
+import Permissions from './components/admin/permissions/List.vue';
 
 app.component('Boton', Button);
 app.component('Card', Card);
 app.component('AppLayout', AppLayout);
 app.component('users', Users);
+app.component('roles', Roles);
+app.component('permissions', Permissions);
 
 app.mount('#app');

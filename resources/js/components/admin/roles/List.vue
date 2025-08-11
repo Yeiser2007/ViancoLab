@@ -1,16 +1,21 @@
 <template>
-        <TitleCard icon="users" title="Gestión de Usuarios">
+        <TitleCard icon="list-check" title="Roles">
                 <Button @click="createItem" :theme="'primary'" :title="'Agregar'" :icon="'plus'"
                         :eventListener="'open-modal'"
                         class="w-auto flex-shrink-0 text-sm px-3 py-1.5 sm:px-4 sm:py-2 sm:text-base sm:ml-2" />
         </TitleCard>
 
-        <TableList ref="tableRef" @edit-item="updateItem($event)" @delete-item="deleteItem($event)"></TableList>
+        <TableList ref="tableRef" @edit-item="updateItem($event)" @delete-item="deleteItem($event)"
+                @show-permissions="showPermissions($event)"></TableList>
 
-        <Modal v-model="showModal" :title="titleModal" size="xl" :backdrop-close="true" @close="onModalClose">
-                <Form :item="formData" :roles="rolesList" @confirm-action="confirmAction" @close="onModalClose" />
+        <Modal v-model="showModal" :title="titleModal" size="xl" :backdrop-close="true">
+                <Form :item="formData" @confirm-action="confirmAction" @close="onModalClose" />
         </Modal>
-        
+
+        <Modal v-model="showModal2" :title="titleModal" size="xl" :backdrop-close="true">
+                <FormPermissions :item="roleItem" @confirm-action="confirmAction" @close="onModal2Close"/>
+        </Modal>
+
 </template>
 <script setup>
 import { ref, reactive, inject, onMounted } from 'vue';
@@ -19,56 +24,27 @@ import Modal from '../../partials/Modal.vue';
 import Button from '../../partials/Button.vue';
 import TitleCard from '../../partials/TitleCard.vue';
 import Form from './Form.vue';
+import FormPermissions from './FormPermissions.vue';
 
 const api = inject('api');
 const Swal = inject('swal');
 
 const showModal = ref(false);
+const roleItem = ref({});
+const showModal2 = ref(false);
 const titleModal = ref('');
 const tableRef = ref(null);
-const rolesList = ref([]);
-
-const fetchRoles = async () => {
-        try {
-                const response = await api.get('admin/roles');
-                rolesList.value = response.data?.data.map(role => ({
-                        label: role.name.charAt(0).toUpperCase() + role.name.slice(1),
-                        value: role.id,
-                        name: role.name.toLowerCase()
-                }));
-        } catch (err) {
-                console.error('Error al cargar roles:', err);
-                Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'No se pudieron cargar los roles'
-                });
-        }
-};
 
 const defaultFormData = () => ({
         id: '',
         name: '',
-        first_name: '',
-        last_name: '',
-        email: '',
-        roles: [],
-        password: '',
-        password_confirmation: '',
         option: '1'
 });
 const formData = reactive(defaultFormData());
 const updateItem = (item) => {
-        const rolesList = item.roles.map(role => role.id);
         Object.assign(formData, {
                 id: item.id,
                 name: item.name,
-                first_name: item.first_name,
-                last_name: item.last_name,
-                email: item.email,
-                roles: rolesList,
-                password: '',
-                password_confirmation: '',
                 option: '2'
         });
         titleModal.value = 'Actualizar Usuario';
@@ -80,7 +56,11 @@ const createItem = () => {
         titleModal.value = 'Crear Usuario';
         showModal.value = true;
 };
-
+const showPermissions = (role) => {
+        roleItem.value = role;
+        titleModal.value = `Permisos de ${role.name}`;
+        showModal2.value = true;
+};
 const deleteItem = async (userId) => {
         try {
                 Swal.fire({
@@ -119,6 +99,9 @@ const deleteItem = async (userId) => {
 const onModalClose = () => {
         showModal.value = false;
 };
+const onModal2Close = () => {
+        showModal2.value = false;
+};
 const confirmAction = () => {
         showModal.value = false;
         reloadTable();
@@ -126,8 +109,6 @@ const confirmAction = () => {
 const reloadTable = () => {
         tableRef.value.refreshData();
 }
-onMounted(() => {
-        fetchRoles();
-});
+
 
 </script>

@@ -1,5 +1,7 @@
 <?php
 
+
+use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RolesController;
@@ -23,6 +25,11 @@ Route::middleware('auth')->group(function () {
 Route::group(['prefix' => 'admin','as' => 'admin.','middleware' => ['auth', 'admin'],], function () {
     Route::resource('/users', UserController::class);
     Route::resource('/roles', RolesController::class);
+    Route::resource('/permissions', PermissionController::class);
+
+    Route::get('/all-permissions', [RolesController::class, 'getAllPermissions']);
+    Route::get('/role-permissions/{role}', [RolesController::class, 'getPermissionsByRole']);
+    Route::put('/role-permissions/{role}', [RolesController::class, 'updateRolePermissions']);
 });
 
 require __DIR__ . '/auth.php';

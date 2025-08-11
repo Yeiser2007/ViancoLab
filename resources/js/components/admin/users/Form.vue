@@ -24,7 +24,7 @@
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
           <Button theme="neutral" title="Cancelar" icon="times" @click="emit('close');" />
-          <Button theme="info" title="Guardar" icon="save" type="submit" />
+          <Button theme="info" :title="loading ? 'Procesando...' : 'Guardar'" icon="save" type="submit" :disabled="loading" />
         </div>
       </div>
     </form>
@@ -32,28 +32,22 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue';
+import { reactive, computed } from 'vue';
+import { useFormSubmit } from '@/composables/useFormHandler';
 import { useGlobal } from '@/composables/useGlobal';
-const { api, swal, InputField, SelectField, Button } = useGlobal();
-import Multiselect from '@vueform/multiselect'
-import '@vueform/multiselect/themes/default.css'
+import Multiselect from '@vueform/multiselect';
+import '@vueform/multiselect/themes/default.css';
+
+const { InputField, Button } = useGlobal();
 
 const emit = defineEmits(['confirm-action', 'close']);
 
 const props = defineProps({
-  item: {
-    type: Object,
-    required: true,
-    default: () => ({})
-  },
-  roles: {
-    type: Array,
-    required: true,
-    default: () => []
-  }
+  item: { type: Object, required: true, default: () => ({}) },
+  roles: { type: Array, required: true, default: () => [] }
 });
-const errors = ref({});
-const loading = ref(false);
+
+const { submit, loading, errors } = useFormSubmit();
 
 const item = reactive({
   ...props.item,
@@ -63,41 +57,12 @@ const item = reactive({
 
 const options = computed(() => props.roles);
 
-const submitForm = async () => {
-  try {
-    loading.value = true;
-    errors.value = {};
-    let response;
-    if (item.option === '2') {
-      response = await api.put('admin/users', item.id, item);
-    } else if (item.option === '1') {
-      response = await api.post('admin/users', item);
-    }
-    if (response?.status === 200) {
-      emit('confirm-action');
-      swal.fire({
-        icon: 'success',
-        title: 'Éxito',
-        text: response.data.message || 'Operación realizada correctamente',
-        timer: 2500,
-        showConfirmButton: true
-      });
-    }
-  } catch (err) {
-    if (err.response?.data?.errors) {
-      errors.value = err.response.data.errors;
-    } else {
-      swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: err.response?.data?.message || 'Error en la solicitud',
-        timer: 2500,
-        showConfirmButton: true
-      });
-    }
-
-  } finally {
-    loading.value = false;
-  }
+const submitForm = () => {
+  submit({
+    method: item.option === '2' ? 'put' : 'post',
+    url: 'admin/users',
+    data: item,
+    onSuccess: () => emit('confirm-action')
+  });
 };
 </script>
