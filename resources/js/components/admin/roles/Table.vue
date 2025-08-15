@@ -14,7 +14,7 @@
             <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
 
-        <DataTable :value="rolesData" :loading="loading" :lazy="true" :paginator="true" :rows="rows"
+        <DataTable :value="data" :loading="loading" :lazy="true" :paginator="true" :rows="rows"
             :totalRecords="totalRecords" @page="onPageChange" @sort="onSort" >
             <Column field="id" header="ID" :sortable="true"></Column>
             <Column field="name" header="Nombre" :sortable="true"></Column>
@@ -37,77 +37,27 @@
     </div>
 </template>
 <script setup>
-import { inject, ref, onMounted, defineExpose } from 'vue';
+import { inject, onMounted, ref } from 'vue';
+import { useDataTable } from '@/composables/fetchData';
 import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
 import FilterBar from '../../partials/FilterBar.vue';
 import Button from '../../partials/Button.vue';
-import Column from 'primevue/column';
-
 defineEmits(['edit-item', 'delete-item', 'refresh', 'show-permissions']);
-
-
 const api = inject('api');
-const rolesData = ref([]);
-const totalRecords = ref(0);
-const loading = ref(false);
-const filters = ref({});
-const sortField = ref(null);
-const sortOrder = ref(null);
-const rolesList = ref([]);
-const currentPage = ref(1);
-const rows = ref();
-
-
-
-const fetchRoles = async () => {
-    loading.value = true;
-    try {
-        const params = {
-            page: currentPage.value,
-            ...filters.value,
-        };
-        rows.value = params.per_page  || 10;
-        if (sortField.value && sortOrder.value) {
-            params.sort = `${sortField.value}|${sortOrder.value === 1 ? 'asc' : 'desc'}`;
-        }
-        console.log("Params que se envían:", params);
-        const response = await api.get('admin/roles', params);
-        rolesData.value = response.data?.data || [];
-        totalRecords.value = response.data?.meta?.total || response.data?.total || 0;
-    } catch (err) {
-        console.error('Error al cargar usuarios:', err);
-    } finally {
-        loading.value = false;
-    }
-};
-const handleFilter = (appliedFilters) => {
-    filters.value = appliedFilters;
-    currentPage.value = 1;
-    fetchRoles();
-};
-const onPageChange = (event) => {
-    currentPage.value = event.page + 1;
-    fetchUsers(event.rows);
-};
-
-const onSort = (event) => {
-    sortField.value = event.sortField;
-    sortOrder.value = event.sortOrder;
-    currentPage.value = 1;
-    fetchUsers();
-};
-
-const refreshData = async () => {
-    await fetchRoles();
-};
-
+const {
+    data,
+    totalRecords,
+    loading,
+    rows,
+    fetchData,
+    handleFilter,
+    onPageChange,
+    onSort,
+    refreshData
+} = useDataTable(api, 'admin/roles');
+defineExpose({ refreshData });
 onMounted(() => {
-    fetchRoles();
+    fetchData();
 });
-
-defineExpose({
-    refreshData,
-    getCurrentData: () => rolesData.value
-});
-
 </script>

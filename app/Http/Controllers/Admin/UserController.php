@@ -37,42 +37,47 @@ class UserController extends Controller
         return view('admin.users');
     }
 
-    public function store(StoreUsersRequest $request)
-    {
-        DB::transaction(function () use ($request) {
-            $user = User::create($request->validated());
-            $user->syncRoles($request->roles);
-        });
+public function store(StoreUsersRequest $request)
+{
+    DB::transaction(function () use ($request) {
+        $user = User::create($request->validated());
+        $roleNames = Role::whereIn('id', $request->roles)->pluck('name')->toArray();
+        $user->syncRoles($roleNames);
+    });
 
-        return response()->json([
-            'message' => 'Usuario creado correctamente'
-        ], 200);
-    }
+    return response()->json([
+        'message' => 'Usuario creado correctamente'
+    ], 200);
+}
 
-    public function update(UpdateUsersRequest $request, User $user)
-    {
-        try {
-            $data = $request->except(['role', 'password']);
-            if ($request->filled('password')) {
-                $data['password'] = bcrypt($request->password); // Hashear la nueva contraseña
-            }
-            $user->update($data);
-            if ($request->has('role')) {
-                $role = Role::findById($request->role, 'web');
-                $user->syncRoles([$role->name]);
-            }
-            return response()->json([
-                'message' => 'Usuario actualizado correctamente',
-                'user' => $user->refresh()->load('roles')
-            ], 200);
-
-        } catch (\Throwable $e) {
-            return response()->json([
-                'error' => 'Error al actualizar usuario',
-                'details' => $e->getMessage()
-            ], 500);
+public function update(UpdateUsersRequest $request, User $user)
+{
+    try {
+        DB::beginTransaction();
+        $data = $request->except(['roles', 'password']);
+        if ($request->filled('password')) {
+            $data['password'] = bcrypt($request->password);
         }
+        $user->update($data);
+        if ($request->has('roles')) {
+            $roleNames = Role::whereIn('id', $request->roles)->pluck('name')->toArray();
+            $user->syncRoles($roleNames);
+        }
+        DB::commit();
+        
+        return response()->json([
+            'message' => 'Usuario actualizado correctamente',
+            'user' => $user->refresh()->load('roles')
+        ], 200);
+
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        return response()->json([
+            'error' => 'Error al actualizar usuario',
+            'details' => $e->getMessage()
+        ], 500);
     }
+}
     public function show(User $users)
     {
         if ($users->exists) {

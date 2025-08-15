@@ -9,36 +9,33 @@
       '-translate-x-full': isMobile && !isMobileOpen
     }">
     <div class="p-4 flex items-center justify-between sticky top-0 bg-primary-800 z-99999">
-      <h2 v-if="!collapsed" class="text-xl font-semibold">Menú</h2>
+      <h2 v-if="!collapsed" class="text-xl font-semibold">Doctorado en Ingeniería</h2>
       <button @click="handleToggle" class="text-white hover:text-gray-300 focus:outline-none">
-        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            :d="collapsed ? 'M13 5l7 7-7 7M5 5l7 7-7 7' : 'M11 19l-7-7 7-7m8 14l-7-7 7-7'" />
-        </svg>
+        <i :class="collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-left'" class="text-lg"></i>
       </button>
     </div>
+    
     <nav class="mt-6">
       <ul>
-        <li v-for="item in menuItems" v-can="item.permission" :key="item.name"
+        <li v-for="item in menuItems" v-can="item.permission" v-role="item.role" :key="item.name"
           class="px-3 py-2 hover:bg-primary-300 mx-1 rounded" :title="collapsed ? item.name : ''">
           <div @click="toggleSubmenu(item.name)" class="flex items-center justify-between cursor-pointer">
             <div class="flex items-center">
-              <span class="flex-shrink-0" v-html="item.icon"></span>
+              <i :class="item.icon" class="text-lg"></i>
               <span v-if="!collapsed" class="ml-3 whitespace-nowrap overflow-hidden overflow-ellipsis">
                 {{ item.name }}
               </span>
             </div>
-            <svg v-if="item.subItems && !collapsed" class="w-4 h-4 transition-transform duration-200"
-              :class="{ 'transform rotate-90': openSubmenu === item.name }" fill="none" stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
+            <i v-if="item.subItems && !collapsed" 
+              class="pi pi-chevron-down text-xs transition-transform duration-200"
+              :class="{ 'transform rotate-90': openSubmenu === item.name }"></i>
           </div>
 
           <transition name="slide">
-            <ul v-if="item.subItems && openSubmenu === item.name && !collapsed"  class="ml-6 mt-1 space-y-1">
-              <li v-for="subItem in item.subItems"   :key="subItem.name" class="px-2 py-1 hover:bg-primary-400 rounded">
+            <ul v-if="item.subItems && openSubmenu === item.name && !collapsed" class="ml-6 mt-1 space-y-1">
+              <li v-for="subItem in item.subItems" :key="subItem.name" class="px-2 py-1 hover:bg-primary-400 rounded">
                 <a :href="subItem.route" class="flex items-center">
+                  <i :class="subItem.icon" class="text-sm mr-2"></i>
                   <span class="text-sm">{{ subItem.name }}</span>
                 </a>
               </li>
@@ -64,21 +61,18 @@ const isMobile = ref(false);
 const openSubmenu = ref(null);
 
 const menuItems = ref([
+  // Dashboard
   {
     name: 'Dashboard',
     route: '/dashboard',
-    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-          </svg>`,
-    permission: ['dashboard.show']
+    icon: 'pi pi-home',
+    permission: ['dashboard.index']
   },
   {
     name: 'Usuarios',
     route: '/users',
-    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-          </svg>`,
-    permission: ['users.index'],
+    icon: 'pi pi-users',
+    role:['administrador'],
     subItems: [
       {
         name: 'Lista de Usuarios',
@@ -97,13 +91,117 @@ const menuItems = ref([
       }
     ]
   },
+  
+  // Módulo Estudiantes
   {
-    name: 'Configuración',
-    route: '/settings',
-    icon: `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
-          </svg>`,
-    permission: ['settings.show']
+    name: 'Mi Progreso',
+    route: '/mi-progreso',
+    icon: 'pi pi-chart-line',
+    role: 'estudiante',
+  },
+  {
+    name: 'Documentación',
+    route: '/documentacion',
+    icon: 'pi pi-file',
+    permission: ['student.documents'],
+    subItems: [
+      {
+        name: 'Requisitos',
+        route: '/documentos/requeridos',
+        icon: 'pi pi-list',
+        permission: ['student.documents.view']
+      },
+      {
+        name: 'Subir Documentos',
+        route: '/documentos/subir',
+        icon: 'pi pi-upload',
+        permission: ['student.documents.upload']
+      }
+    ]
+  },
+  {
+    name: 'Mi Protocolo',
+    route: '/mi-protocolo',
+    icon: 'pi pi-book',
+    permission: ['student.protocol']
+  },
+  {
+    name: 'Mi Tesis',
+    route: '/mi-tesis',
+    icon: 'pi pi-file-edit',
+    permission: ['student.thesis']
+  },
+  {
+    name: 'Beca CONACYT',
+    route: '/mi-beca',
+    icon: 'pi pi-wallet',
+    permission: ['student.scholarship']
+  },
+  
+  // Módulo Investigadores
+  {
+    name: 'Estudiantes',
+    route: '/asesorados',
+    icon: 'pi pi-users',
+    permission: ['advisor.students']
+  },
+  {
+    name: 'Revisiones',
+    route: '/revisiones',
+    icon: 'pi pi-check-circle',
+    permission: ['advisor.reviews']
+  },
+  {
+    name: 'Calendario',
+    route: '/calendario',
+    icon: 'pi pi-calendar',
+    permission: ['advisor.calendar']
+  },
+  
+  {
+    name: 'Administración',
+    route: '/admin',
+    icon: 'pi pi-cog',
+    role: 'administrador',
+    subItems: [
+      {
+        name: 'Alumnos',
+        route: '/admin/students',
+        icon: 'pi pi-users',
+        permission: ['admin.students']
+      },
+      {
+        name: 'Generaciones',
+        route: '/admin/generaciones',
+        icon: 'pi pi-sitemap',
+        permission: ['admin.generations']
+      },
+      {
+        name: 'Becas',
+        route: '/admin/becas',
+        icon: 'pi pi-money-bill',
+        permission: ['admin.scholarships']
+      },
+      {
+        name: 'Líneas de Investigación',
+        route: '/admin/lineas',
+        icon: 'pi pi-sitemap',
+        permission: ['admin.research_lines']
+      },
+      {
+        name: 'Reportes',
+        route: '/admin/reportes',
+        icon: 'pi pi-chart-bar',
+        permission: ['admin.reports']
+      }
+    ]
+  },
+  
+  {
+    name: 'Mensajes',
+    route: '/mensajes',
+    icon: 'pi pi-envelope',
+    permission: ['messages.access']
   }
 ]);
 
@@ -142,6 +240,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* Tus estilos existentes se mantienen igual */
 [title] {
   position: relative;
 }

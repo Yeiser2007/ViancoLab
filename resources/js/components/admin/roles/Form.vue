@@ -40,7 +40,7 @@ const item = reactive({
 const submitForm = () => {
   submit({
     method: item.option === '2' ? 'put' : 'post',
-    url: 'admin/users',
+    url: 'admin/roles',
     data: item,
     onSuccess: () => emit('confirm-action')
   });

@@ -19,9 +19,20 @@ app.config.globalProperties.$roles = window.Laravel?.roles || null;
 
 app.directive('can', {
   beforeMount(el, binding) {
-    const userPermissions = window.Laravel?.permissions || {};
+    if (!window.Laravel) {
+      el.style.display = 'none';
+      return;
+    }
+
+    const userPermissions = window.Laravel.permissions || {};
+    const userRoles = window.Laravel.roles || [];
     const value = binding.value;
     let allowed = false;
+
+    if (!value || (Array.isArray(value) && value.length === 0)) {
+      return; 
+    }
+
     if (Array.isArray(value)) {
       allowed = value.some(perm => userPermissions[perm]);
     } else if (typeof value === 'string') {
@@ -33,7 +44,28 @@ app.directive('can', {
     }
   }
 });
+app.directive('role', {
+  beforeMount(el, binding) {
+    if (!window.Laravel?.roles) {
+      el.style.display = 'none';
+      return;
+    }
 
+    const userRoles = window.Laravel.roles || [];
+    const value = binding.value;
+    let hasRole = false;
+
+    if (Array.isArray(value)) {
+      hasRole = value.some(role => userRoles.includes(role));
+    } else if (typeof value === 'string') {
+      hasRole = userRoles.includes(value);
+    }
+
+    if (!hasRole) {
+      el.style.display = 'none';
+    }
+  }
+});
 app.directive('can-else', {
   beforeMount(el, binding) {
     if (window.Laravel?.permissions?.[binding.value]) {

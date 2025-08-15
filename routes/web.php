@@ -30,6 +30,9 @@ Route::group(['prefix' => 'admin','as' => 'admin.','middleware' => ['auth', 'adm
     Route::get('/all-permissions', [RolesController::class, 'getAllPermissions']);
     Route::get('/role-permissions/{role}', [RolesController::class, 'getPermissionsByRole']);
     Route::put('/role-permissions/{role}', [RolesController::class, 'updateRolePermissions']);
+
+    // Estudiantes
+    Route::resource('/students', ::class);
 });
 
 require __DIR__ . '/auth.php';

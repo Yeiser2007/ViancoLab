@@ -103,7 +103,7 @@ const props = defineProps<FilterProps>();
 const emit = defineEmits(['filter']);
 const showFilters = ref(false);
 
-const perPage = ref('10');
+const perPage = ref('5');
 const filterText = ref('');
 const nameFilter = ref('');
 const dateFilter = ref('');
@@ -137,7 +137,6 @@ const fetchRoles = async () => {
             label: role.name.charAt(0).toUpperCase() + role.name.slice(1),
             value: role.id
         }));
-        console.log("Roles formateados:", JSON.parse(JSON.stringify(rolesList.value)));
     } catch (err) {
         console.error('Error al cargar roles:', err);
     }

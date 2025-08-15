@@ -1,6 +1,5 @@
 <template>
     <div class="min-w-full max-h-[80vh]">
-        <span>{{ item.id }}--{{ item.name }}</span>
         <form @submit.prevent="submit">
             <div :class="['transition-all duration-300 will-change-auto max-w-2xl']">
                 <div class="space-y-4">

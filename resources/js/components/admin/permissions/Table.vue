@@ -6,7 +6,7 @@
             role: false,
             date: false,
             dateRange: false
-        }" :roles="rolesList" @filter="handleFilter" class="h-full" />
+        }" @filter="handleFilter" class="h-full" />
     </div>
     <div class="relative">
         <div v-if="loading"

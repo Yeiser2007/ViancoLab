@@ -28,9 +28,10 @@ trait TableTrait
         return $builder;
     }
 
+    
     public static function paginate(Request $request, Builder $builder)
     {
-        $perPage = $request->input('per_page', null);
+        $perPage = $request->input('per_page', 5);
         return $builder->paginate($perPage ?: $builder->getModel()->newQuery()->count());
     }
 

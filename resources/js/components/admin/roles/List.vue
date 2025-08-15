@@ -61,7 +61,7 @@ const showPermissions = (role) => {
         titleModal.value = `Permisos de ${role.name}`;
         showModal2.value = true;
 };
-const deleteItem = async (userId) => {
+const deleteItem = async (id) => {
         try {
                 Swal.fire({
                         title: '¿Estás seguro?',
@@ -74,7 +74,7 @@ const deleteItem = async (userId) => {
                         cancelButtonText: 'Cancelar'
                 }).then(async (result) => {
                         if (result.isConfirmed) {
-                                const response = await api.delete(`admin/users`, userId);
+                                const response = await api.delete(`admin/roles`, id);
                                 if (response?.status === 200) {
                                         Swal.fire({
                                                 icon: 'success',
